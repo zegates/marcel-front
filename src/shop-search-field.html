@@ -2,18 +2,54 @@
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-form-styles.html">
-
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/polymer-bootstrap/polymer-bootstrap.html">
 
 <dom-module id="shop-search-field">
     <template>
-        <style include="polymer-bootstrap"></style>
-            <div class="input-group" style="width: 300px;margin-left: 0px">
-            <input type="text" class="form-control" placeholder="Search for...">
-            <span class="input-group-btn">
-             <button class="btn btn-default" type="button">Go!</button>
-            </span>
-            </div><!-- /input-group -->
+        <!--<style include="polymer-bootstrap"></style>-->
+        <style>
+            paper-input.custom{
+                float: left;
+            }
+            paper-button.custom {
+                margin-top: 28px;
+                height: 30px;
+                font-size: 14px;
+                --paper-button-ink-color: var(--paper-pink-a200);
+                /* These could also be individually defined for each of the
+                  specific css classes, but we'll just do it once as an example */
+                --paper-button-flat-keyboard-focus: {
+                    background-color: var(--paper-pink-a200);
+                    color: white !important;
+                };
+                --paper-button-raised-keyboard-focus: {
+                    background-color: var(--paper-pink-a200) !important;
+                    color: white !important;
+                };
+            }
+            paper-button.custom:hover {
+                background-color: var(--paper-indigo-200);
+            }
+            paper-button.indigo {
+                background-color: var(--paper-indigo-500);
+                color: white;
+                --paper-button-raised-keyboard-focus: {
+                    background-color: var(--paper-pink-a200) !important;
+                    color: white !important;
+                };
+            }
+
+        </style>
+            <!--<div class="input-group" style="width: 300px;margin-left: 0px">-->
+            <!--<input type="text" class="form-control" placeholder="Search for...">-->
+            <!--<span class="input-group-btn">-->
+             <!--<button class="btn btn-default" type="button">Go!</button>-->
+            <!--</span>-->
+            <!--</div>&lt;!&ndash; /input-group &ndash;&gt;-->
+        <paper-input class="custom" label="Search Products..." id="searchTxt" on-keydown="checkForEnter"></paper-input>
+        <paper-button raised class="custom indigo" on-click="_submitSearch">Search</paper-button>
     </template>
     <script>
         Polymer({
@@ -30,6 +66,20 @@
             _visibleChanged: function(visible) {
                 if (visible) {
                     this.fire('change-section', { title: 'Home' });
+                }
+            },
+
+            checkForEnter: function (e) {
+                // check if 'enter' was pressed
+                if (e.keyCode === 13) {
+                    this._submitSearch();
+                }
+            },
+
+            _submitSearch: function() {
+                if(this.$.searchTxt.value != "") { // whatever input check
+                    console.log(this.$.searchTxt.value);
+                    window.location = "/products/" + this.$.searchTxt.value;
                 }
             }
         });

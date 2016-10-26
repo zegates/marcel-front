@@ -9,10 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-products-data.html">
 <link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-item.html">
 
 <dom-module id="shop-products">
 
@@ -169,8 +172,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _getItemHref: function(item) {
                 // By returning null when `itemId` is undefined, the href attribute won't be set and
                 // the link will be disabled.
-        return "#";
-//                return item.idproducts ? ['/detail', this.category.category, item.idproducts].join('/') : null;
+//        return "#";
+                return item.idproducts ? ['/detail', item.dep_num, item.idproducts].join('/') : null;
             },
 
             _getPluralizedQuantity: function(quantity) {

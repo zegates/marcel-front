@@ -143,7 +143,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       this._getResource({
         url: 'http://0.0.0.0:3000/api/products?filter[where][dep_num][regexp]=^' + category.category,//'/data/' + category.name + '.json',
-        onLoad: function(e) {title
+        onLoad: function(e) {
           this.set('category.items', JSON.parse(e.target.responseText));
         },
         onError: function(e) {
