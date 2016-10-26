@@ -1,0 +1,37 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-form-styles.html">
+
+<link rel="import" href="../bower_components/polymer-bootstrap/polymer-bootstrap.html">
+
+<dom-module id="shop-search-field">
+    <template>
+        <style include="polymer-bootstrap"></style>
+            <div class="input-group" style="width: 300px;margin-left: 0px">
+            <input type="text" class="form-control" placeholder="Search for...">
+            <span class="input-group-btn">
+             <button class="btn btn-default" type="button">Go!</button>
+            </span>
+            </div><!-- /input-group -->
+    </template>
+    <script>
+        Polymer({
+            is: 'shop-search-field',
+
+            properties: {
+                visible: {
+                    type: Boolean,
+                    observer: '_visibleChanged'
+                }
+
+            },
+
+            _visibleChanged: function(visible) {
+                if (visible) {
+                    this.fire('change-section', { title: 'Home' });
+                }
+            }
+        });
+    </script>
+</dom-module>

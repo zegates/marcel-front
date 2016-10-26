@@ -1,0 +1,228 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--<link rel="import" href="../components/iron-ajax/iron-ajax.html">-->
+<!--<script src="../bower_components/cometd-jq/jquery.min.js" type="text/javascript"></script>-->
+<!--<script src="../bower_components/cometd-jq/jquery.cometd.js" type="text/javascript"></script>-->
+
+<dom-module id="shop-category-data">
+  <template>
+    <iron-ajax auto url="http://localhost:3000/api/categories?filter[where][level]=0" handle-as="json" on-response="tasksLoaded"></iron-ajax>
+    <iron-ajax auto url="http://localhost:3000/api/categories" handle-as="json" on-response="categoryAllLoaded"></iron-ajax>
+  </template>
+
+  <script>
+
+
+(function() {
+
+  Polymer({
+
+    is: 'shop-category-data',
+
+    properties: {
+
+      categoryName: String,
+
+      itemName: String,
+
+      categories: {
+        type: Array,
+//        value: categoryList,
+//        readOnly: false,
+        notify: true
+      },
+
+      categoryAll: {
+        type: Array,
+        notify: true
+      },
+
+      categoryTree: {
+        type: Array,
+        notify: true
+      },
+
+      level1: {
+        type: Array,
+        notify: true
+      },
+      level2: {
+        type: Object,
+        notify: true
+      },
+
+      category: {
+        type: Object,
+        computed: '_computeCategory(categoryName, categoryAll)',
+        notify: true
+      },
+
+      item: {
+        type: Object,
+        computed: '_computeItem(category.items, itemName)',
+        notify: true
+      },
+
+      failure: {
+        type: Boolean,
+        notify: true,
+        readOnly: true
+      }
+    },
+    ready: function () {
+      this.level2 = [];
+      this.categoryAll = [];
+    },
+
+    attached: function () {
+      this.categories = [];
+      this.categoryAll = [];
+//      this.level2 =[];
+    },
+    tasksLoaded: function (data) {
+      this.categories = data.detail.response;
+
+//      this.level2 =[];
+
+      this._createCategoryTree();
+//      var category = this.categoryName;
+//      this.fire('change-section', {
+//        category: category.category,
+//        title: category.category_name
+//      });
+    },
+
+    categoryAllLoaded: function (data) {
+      this.categoryAll = data.detail.response;
+      this.level2 =[];
+      this._createCategoryTree();
+    },
+
+    _getCategoryObject: function(categoryName) {
+      for (var i = 0, c; c = this.categoryAll[i]; ++i) {
+        if (c.category === categoryName) {
+          return c;
+        }
+      }
+//      var cat ={category: categoryName};
+
+      return null;
+    },
+
+    _computeCategory: function(categoryName) {
+      // Fetch the items of the category. Note that the fetch is asynchronous,
+      // which means `category.items` may not be set initially (but that path
+      // will be notified when the fetch completes).
+      var categoryObj = this._getCategoryObject(categoryName);
+      this._fetchItems(categoryObj, 3);
+      return categoryObj;
+    },
+
+    _computeItem: function(items, itemName) {
+      for (var i = 0, item; item = items[i]; ++i) {
+        if (item.idproducts == itemName) {
+          return item;
+        }
+      }
+    },
+
+    _fetchItems: function(category, attempts) {
+      this._setFailure(false);
+      // Only fetch the items of a category if it has not been previously set.
+      if (!category || category.items) {
+        return;
+      }
+      this._getResource({
+        url: 'http://0.0.0.0:3000/api/products?filter[where][dep_num][regexp]=^' + category.category,//'/data/' + category.name + '.json',
+        onLoad: function(e) {title
+          this.set('category.items', JSON.parse(e.target.responseText));
+        },
+        onError: function(e) {
+          this._setFailure(true);
+        }
+      }, attempts);
+    },
+
+    _getResource: function(rq, attempts) {
+      var xhr = new XMLHttpRequest();
+      xhr.addEventListener('load', rq.onLoad.bind(this));
+      xhr.addEventListener('error', function(e) {
+        // Flaky connections might fail fetching resources
+        if (attempts > 1) {
+          this.debounce('_getResource', this._getResource.bind(this, rq, attempts - 1), 200);
+        } else {
+          rq.onError.call(this, e);
+        }
+      }.bind(this));
+
+      xhr.open('GET', rq.url);
+      xhr.send();
+    },
+
+    refresh: function() {
+      if (this.categoryName) {
+        // Try at most 3 times to get the items.
+        this._fetchItems(this._getCategoryObject(this.categoryName), 3);
+      }
+    },
+
+    jsonToArrayNext(c, to, lev){
+      if(c.next && to !== lev){
+        c.next = Object.keys(c.next).map(function(k) { return c.next[k] });
+        lev++;
+        for (var i = 0, d; d = c.next[i]; ++i) {
+          this.jsonToArrayNext(d, to, lev);
+        }
+      }
+    },
+
+    recf: function (n, map) {
+      n.next = map[n.c.category];
+      if(n.next) {
+        for (var i = 0, c; c = n.next[i]; ++i) {
+          this.recf(c, map);
+        }
+      }
+    },
+
+    _createCategoryTree: function () {
+      if(this.categoryAll && this.categories){
+        var categoryMap = {};
+        for (var i = 0, c; c = this.categoryAll[i]; ++i) {
+          if(categoryMap[c.pre_category]){
+            categoryMap[c.pre_category].push({c : c, next:{}});
+          }else if(c.level !== 0){
+            categoryMap[c.pre_category] = [{c : c, next:{}}];
+          }
+        }
+
+        var categoryTree = [], idList = {};
+
+        for (var i = 0, c; c = this.categories[i]; ++i) {
+          var node = {c : c, next:categoryMap[c.category]};
+          this.recf(node, categoryMap);
+          categoryTree.push(node);
+        }
+
+        this.level2 = categoryTree;
+
+      }
+    }
+  });
+
+})();
+
+
+
+  </script>
+
+</dom-module>
