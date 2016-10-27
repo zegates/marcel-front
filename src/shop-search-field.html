@@ -79,7 +79,7 @@
             _submitSearch: function() {
                 if(this.$.searchTxt.value != "") { // whatever input check
                     console.log(this.$.searchTxt.value);
-                    window.location = "/products/" + this.$.searchTxt.value;
+                    window.location = "/products/?search=" + this.$.searchTxt.value + "&page=1";
                 }
             }
         });

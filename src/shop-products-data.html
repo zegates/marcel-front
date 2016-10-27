@@ -32,6 +32,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 properties: {
 
+                    itemsPerPage:{
+                        type: Number,
+                        notify: true
+                    },
+
+                    currentPage:{
+                        type: Number,
+                        notify: true
+                    },
+
                     productName: String,
 
                     products: {
@@ -60,13 +70,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 },
 
                 observers: [
-                    'fetchProducts(productName)'
+                    'fetchProducts(productName)',
+                    'fetchProductsPerPage(currentPage)'
                 ],
 
                 fetchProducts: function(productName) {
                     this._setFailure(false);
-                    this.$.get_products.url = "http://localhost:3000/api/products?filter[where][title][regexp]=("+this.productName+")";
+                    this.$.get_products.url = "http://localhost:3000/api/products?filter[where][title][regexp]=("+
+                            this.productName+")&filter[limit]="+this.itemsPerPage+"&filter[skip]="+this.itemsPerPage * (this.currentPage - 1);
                     this.$.get_products.generateRequest();
+                },
+
+                fetchProductsPerPage: function(page) {
+                    if(this.productName){
+                        this.fetchProducts(this.productName);
+                    }
+
+//                    this._setFailure(false);
+//                    this.$.get_products.url = "http://localhost:3000/api/products?filter[where][title][regexp]=("+
+//                            this.productName+")&filter[limit]="+this.itemsPerPage+"&filter[skip]="+this.itemsPerPage * (this.currentPage - 1);
+//                    this.$.get_products.generateRequest();
                 },
 
                 ready: function () {
